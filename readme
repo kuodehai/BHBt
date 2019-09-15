@@ -1,0 +1,87 @@
+ linux平台整合behaviac库到项目中时，编译参数需设置-fno-rtti，否则编译会提示找不到behaviac库中类的typeinfo。
+ 如果behaviac库编译为debug版本，项目也需要编译为debug版本，并且需在编译参数中添加_DEBUG宏。
+
+
+             使用场景，不只是AI，支持并不限于
+·                                              Character AI
+·                                              Squad Logic
+·                                              Strategy AI
+·                                              In-Game Tutor
+·                                              Animation Control
+·                                              Player Avatars
+·                                              Camera Logic
+·                                              Level Scripting
+
+
+#######################################################
+cmake .. -DBEHAVIAC_VERSION_MODE="ForeUseRelease"
+
+set( SHARED_LIB "SHARED" )
+ 
+#######################################################
+
+优化及性能  http://www.behaviac.com/performence/
+
+宏BEHAVIAC_RELEASE定义的时候是最终版，BEHAVIAC_RELEASE没有定义的时候是为开发版。
+
+在debug版中，BEHAVIAC_RELEASE缺省下没有定义的。诸如logging、socketing、热加载等开发功能是有效的。可以通过behaviac::Config::IsLogging和behaviac::Config::IsSocketing来控制是否要Log到文件或是否与编辑器的连接。
+在release版中，BEHAVIAC_RELEASE缺省是有定义的。诸如logging、socketing、热加载等开发功能都是没有定义的。
+
+#########################################################################################################
+定义BEHAVIAC_RELEASE，从而不编译诸如logging、socketing、热加载等开发功能，提供最高效率，也不支持连调功能。
+C++下，在_config.h中定义BEHAVIAC_RELEASE为1
+inc/behaviac/common/_config.h    #define BEHAVIAC_RELEASE 		1
+#############################################################################################################
+
+
+使用cmake构建C++版运行时库 http://www.behaviac.com/language/zh/build/
+
+离线调试
+
+离线调试功能是指在编辑器里加载运行时产生的_behaviac_$_.log文件，如下图，可以加载_behaviac_$_.log文件：
+https://www.behaviac.com/language/zh/debugging_desc/
+
+
+
+
+
+behaviac的运行时提供有核心的更新行为树的功能，在其之上，还有logging，热加载，连调等调试功能。这些调试功能只是‘开发’功能，在游戏发布后实际上是不需要的。
+
+除了可以在config.h中定义BEHAVIAC_RELEASE宏为1来完全使‘开发功能’不被编译外。也可以保留这些‘开发’功能但只是使用下面所列的‘开关’来关闭或者打开某些功能。
+
+具体可以参考优化及性能
+
+Cpp
+namespace behaviac
+{
+class BEHAVIAC_API Config
+{
+public:
+static bool IsProfiling();
+static void SetProfiling(bool bEnabled);
+ 
+//logging是否打开
+static bool IsLogging();
+static void SetLogging(bool bLogging);
+ 
+//logging打开的情况下，是否每次logging的时候都Flush
+static bool IsLoggingFlush();
+static void SetLoggingFlush(bool bFlush);
+ 
+//socket连接是否打开，只有打开socket连接，连调功能才会支持
+static bool IsSocketing();
+static void SetSocketing(bool bSocketing);
+ 
+//是否是阻塞模式，当时阻塞模式的时候，游戏会阻塞，等待编辑器的连接，
+//只有成功建立连接后，游戏才继续运行
+static bool IsSocketBlocking();
+static void SetSocketBlocking(bool bBlocking);
+ 
+//游戏和编辑器建立连接的时候使用的端口
+static void SetSocketPort(unsigned short port);
+static unsigned short GetSocketPort();
+ 
+//热加载是否打开
+static bool IsHotReload();
+static void SetHotReload(bool bHotReload);
+};
